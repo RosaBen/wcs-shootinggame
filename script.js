@@ -2,6 +2,7 @@
 import Player from "./models/Player.js";
 import Projectile from "./models/Projectile.js";
 import Enemy from "./models/Enemy.js";
+import Particle from "./models/Particle.js";
 
 
 // variables
@@ -9,6 +10,7 @@ const canvas = document.getElementById("container");
 const ctx = canvas.getContext('2d');
 const projectiles = [];
 const enemies = [];
+const particles = [];
 let animationId;
 let enemySpawnId;
 
@@ -34,6 +36,16 @@ function animate () {
 
   player.draw(ctx);
 
+  // particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const particle = particles[i];
+    if (particle.alpha <= 0) {
+      particles.splice(i, 1);
+    } else {
+      particle.update(ctx);
+    }
+  }
+
 
   // projectiles
   for (let p = projectiles.length - 1; p >= 0; p--) {
@@ -47,7 +59,6 @@ function animate () {
       proj.y - proj.radius > canvas.height
     ) {
       projectiles.splice(p, 1);
-      continue;
     }
   }
 
@@ -83,15 +94,30 @@ function animate () {
       const distance = Math.hypot(
         projectile.x - enemy.x,
         projectile.y - enemy.y);
+
       if (distance - projectile.radius - enemy.radius <= 0) {
+        for (let i = 0; i < 8; i++) {
+          particles.push(
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 2 + 1,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * 3,
+                y: (Math.random() - 0.5) * 3,
+              }));
+        }
+
         if (enemy.radius - 10 > 5) {
-          enemy.radius -= 10;
+          gsap.to(enemy, {
+            radius: enemy.radius - 10,
+          });
           projectiles.splice(p, 1);
-          break;
         } else {
           enemies.splice(e, 1);
           projectiles.splice(p, 1);
-          break;
+
         }
 
 
