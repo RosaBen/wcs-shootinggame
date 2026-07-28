@@ -7,18 +7,33 @@ import Particle from "./models/Particle.js";
 
 // variables
 const canvas = document.getElementById("container");
+const scoreEl = document.getElementById("scoreEl");
+const startGameBtn = document.getElementById("startGameBtn");
+const modalEl = document.getElementById("modalEl");
+const bigScoreEl = document.getElementById("bigScoreEl");
 const ctx = canvas.getContext('2d');
 const projectiles = [];
 const enemies = [];
 const particles = [];
 let animationId;
 let enemySpawnId;
+let score = 0;
 
 // Create new Player
 const player = new Player(canvas.width / 2, canvas.height / 2, 10, "blue");
 
 
 // functions
+
+function init () {
+  player = new Player(canvas.width / 2, canvas.height / 2, 10, "white");
+  projectiles = [];
+  enemies = [];
+  particles = [];
+  score = 0;
+  scoreEl.innerText = score;
+  bigScoreEl.innerText = score;
+}
 function resizeCanvas () {
   canvas.width = innerWidth;
   canvas.height = innerHeight;
@@ -110,11 +125,17 @@ function animate () {
         }
 
         if (enemy.radius - 10 > 5) {
+
+          score += 100;
+          scoreEl.textContent = score;
           gsap.to(enemy, {
             radius: enemy.radius - 10,
           });
           projectiles.splice(p, 1);
         } else {
+
+          score += 250;
+          scoreEl.textContent = score;
           enemies.splice(e, 1);
           projectiles.splice(p, 1);
 
