@@ -1,4 +1,4 @@
-import Entity from "./models/Entity.js";
+
 import Player from "./models/Player.js";
 import Projectile from "./models/Projectile.js";
 import Enemy from "./models/Enemy.js";
@@ -10,11 +10,11 @@ const ctx = canvas.getContext('2d');
 const projectiles = [];
 const enemies = [];
 let animationId;
+let enemySpawnId;
 
 // Create new Player
 const player = new Player(canvas.width / 2, canvas.height / 2, 10, "blue");
-// Shoot projectiles from player
-const projectile = new Projectile(50, 50, 30, "blue", { x: 3, y: 3 });
+
 
 // functions
 function resizeCanvas () {
@@ -25,29 +25,76 @@ function resizeCanvas () {
 }
 
 function animate () {
-  requestAnimationFrame(animate);
+
+  animationId = requestAnimationFrame(animate);
+
 
   ctx.fillStyle = "rgba(0,0,0,1)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   player.draw(ctx);
 
-  projectiles.forEach(projectile => projectile.update(ctx));
-  enemies.forEach((enemy, enemyIndex) => {
-    projectiles.forEach((projectile, projectileIndex) => {
-      const distance = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y);
-      if (distance - projectile.radius - enemy.radius >= 0) {
-        enemies.splice(enemyIndex, 1);
-        projectiles.splice(projectileIndex, 1);
-      }
-    });
+
+  // projectiles
+  for (let p = projectiles.length - 1; p >= 0; p--) {
+    const proj = projectiles[p];
+    proj.update(ctx);
+
+    if (
+      proj.x + proj.radius < 0 ||
+      proj.x - proj.radius > canvas.width ||
+      proj.y + proj.radius < 0 ||
+      proj.y - proj.radius > canvas.height
+    ) {
+      projectiles.splice(p, 1);
+      continue;
+    }
+  }
+
+  // enemies + collissions
+  for (let e = enemies.length - 1; e >= 0; e--) {
+    const enemy = enemies[e];
     enemy.update(ctx);
-  });
+
+    if (
+      enemy.x + enemy.radius < -100 ||
+      enemy.x - enemy.radius > canvas.width + 100 ||
+      enemy.y + enemy.radius < -100 ||
+      enemy.y - enemy.radius > canvas.height + 100
+
+    ) {
+      enemies.splice(e, 1);
+      continue;
+    }
+
+    // collision palyer/enemy => stop game
+    const distPlayerEnemy = Math.hypot(
+      player.x - enemy.x,
+      player.y - enemy.y);
+    if (distPlayerEnemy - enemy.radius - player.radius <= 0) {
+      cancelAnimationFrame(animationId);
+      clearInterval(enemySpawnId);
+      return;
+    }
+
+    // collision projectile/enemy
+    for (let p = projectiles.length - 1; p >= 0; p--) {
+      const projectile = projectiles[p];
+      const distance = Math.hypot(
+        projectile.x - enemy.x,
+        projectile.y - enemy.y);
+      if (distance - projectile.radius - enemy.radius <= 0) {
+        enemies.splice(e, 1);
+        projectiles.splice(p, 1);
+        break;
+      }
+    }
+  }
 }
 
 function spawnEnemies () {
 
-  setInterval(() => {
+  enemySpawnId = setInterval(() => {
     const radius = Math.random() * (30 - 4) + 4;
     const r = Math.floor(Math.random() * 256);
     const g = Math.floor(Math.random() * 256);
