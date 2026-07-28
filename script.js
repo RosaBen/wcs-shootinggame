@@ -84,9 +84,17 @@ function animate () {
         projectile.x - enemy.x,
         projectile.y - enemy.y);
       if (distance - projectile.radius - enemy.radius <= 0) {
-        enemies.splice(e, 1);
-        projectiles.splice(p, 1);
-        break;
+        if (enemy.radius - 10 > 5) {
+          enemy.radius -= 10;
+          projectiles.splice(p, 1);
+          break;
+        } else {
+          enemies.splice(e, 1);
+          projectiles.splice(p, 1);
+          break;
+        }
+
+
       }
     }
   }
