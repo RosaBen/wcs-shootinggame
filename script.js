@@ -12,15 +12,15 @@ const startGameBtn = document.getElementById("startGameBtn");
 const modalEl = document.getElementById("modalEl");
 const bigScoreEl = document.getElementById("bigScoreEl");
 const ctx = canvas.getContext('2d');
-const projectiles = [];
-const enemies = [];
-const particles = [];
+let projectiles = [];
+let enemies = [];
+let particles = [];
 let animationId;
 let enemySpawnId;
 let score = 0;
 
 // Create new Player
-const player = new Player(canvas.width / 2, canvas.height / 2, 10, "blue");
+let player = new Player(canvas.width / 2, canvas.height / 2, 10, "blue");
 
 
 // functions
@@ -99,6 +99,9 @@ function animate () {
       player.y - enemy.y);
     if (distPlayerEnemy - enemy.radius - player.radius <= 0) {
       cancelAnimationFrame(animationId);
+      bigScoreEl.textContent = score;
+      startGameBtn.textContent = "Restart Game";
+      modalEl.style.display = "flex";
       clearInterval(enemySpawnId);
       return;
     }
@@ -201,6 +204,12 @@ window.addEventListener("click", function (e) {
 
   projectiles.push(projectile);
 
+});
+startGameBtn.addEventListener("click", () => {
+  init();
+  modalEl.style.display = "none";
+  animate();
+  spawnEnemies();
 });
 
 
